@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- The family's list knows the newest apps (PR7-HB, PR7-FS, PR7-AR, PR7-WM), so links between apps and Check for Updates find them.
+
 ## 0.2.0
 
 - **One finish for the whole family.** Choosing OBSIDIAN or AURORA here switches every Paragon app, open ones included (within a couple of seconds), and every app starts in the family's choice. PR7-SM's menu has a Finish choice now; its lower pane is light in AURORA (it stayed dark), and new processes show in AURORA too.
