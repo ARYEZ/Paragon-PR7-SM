@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComb
                                QMessageBox, QPushButton, QSplitter, QStackedWidget, QStyle, QStyledItemDelegate,
                                QTabBar, QTableView, QTreeView, QVBoxLayout, QWidget)
 
-from . import __version__, actions, family, procs, settings, taskmgr, theme, widgets
+from . import __version__, actions, family, finish, procs, settings, taskmgr, theme, widgets
 from .graphs import Graph
 
 COLUMNS = ["PROCESS", "CPU", "PRIVATE BYTES", "WORKING SET", "PID", "DESCRIPTION", "COMPANY NAME"]
@@ -46,6 +46,10 @@ def option(key):
 def tint(kind: str) -> QColor | None:
     if not kind:
         return None
+    if kind == "new" and theme.FINISH == "aurora":     # pearl vanishes on the light finish: a deeper grey there
+        c = QColor("#8F8489")
+        c.setAlphaF(.35)
+        return c
     c = QColor(KIND[kind])
     c.setAlphaF(.5 if kind == "suspended" else .22)
     return c
@@ -68,7 +72,7 @@ QLabel#note {{ color: {theme.TEXT_DIM}; }}
 QLabel#value {{ font-size: 13px; }}
 QPushButton[kind="primary"] {{ background: {theme.qss_gradient()}; color: #FFFFFF; border: none; border-radius: 4px;
     padding: 9px 22px; font-weight: 600; }}
-QFrame#pane {{ background: {theme.PANEL}; border-top: 1px solid {theme.PANEL_EDGE}; }}
+QFrame#pane {{ background: {theme.DOCK_TOP}; border-top: 1px solid {theme.PANEL_EDGE}; }}
 """
 
 
@@ -381,6 +385,19 @@ class MainWindow(QMainWindow):
         self.setStyleSheet(stylesheet())
         self.header.update()
 
+    def set_finish(self, name: str):
+        """OBSIDIAN or AURORA, for this window, its open dialogs and (finish.py) every other family app."""
+        theme.set_finish(name)
+        finish.set(theme.FINISH)                 # every family app follows (finish.py)
+        settings.set("finish", theme.FINISH)
+        self.restyle()
+        self.model._icon_cache.clear()           # the line icons are drawn in the finish's colours
+        for d in self.dialogs:
+            d.setStyleSheet(stylesheet())
+            if hasattr(d, "header"):
+                d.header.update()
+        self.update()
+
     # ---------------------------------------------------------------- parts
     def _toolbar(self) -> QHBoxLayout:
         bar = QHBoxLayout()
@@ -680,6 +697,11 @@ class MainWindow(QMainWindow):
         a.setChecked(self.pane.isVisible())
         if sys.platform == "win32" and not procs.is_admin():
             m.addAction("Show details for all processes (run as administrator)", self.run_as_admin)
+        fin = m.addMenu("Finish")
+        for name in ("obsidian", "aurora"):
+            a = fin.addAction(name.upper(), lambda n=name: self.set_finish(n))
+            a.setCheckable(True)
+            a.setChecked(theme.FINISH == name)
         m.addAction("Options", self.options)
         m.addAction("Check for updates", self.check_updates)
         m.addAction(f"About PR7-SM {__version__}", lambda: self._say(

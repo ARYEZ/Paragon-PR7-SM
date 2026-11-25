@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+
+- **One finish for the whole family.** Choosing OBSIDIAN or AURORA here switches every Paragon app, open ones included (within a couple of seconds), and every app starts in the family's choice. PR7-SM's menu has a Finish choice now; its lower pane is light in AURORA (it stayed dark), and new processes show in AURORA too.
+- In AURORA, group titles and selected rows are dark and readable (they were white on the light finish).
+
 ## 0.1.0
 
 - First release: a system monitor that works the way Process Explorer works. The process tree refreshed every second

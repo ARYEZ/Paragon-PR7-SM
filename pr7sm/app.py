@@ -186,7 +186,8 @@ def _window(argv: list[str]) -> int:
     app.setApplicationName("PR7-SM")
     if hand_over():
         return 0
-    theme.set_finish(settings.get("finish", "obsidian"))
+    from . import finish
+    theme.set_finish(finish.start(settings.get("finish", "obsidian")))
     theme.load_fonts()
     app.setPalette(theme.palette())
     from PySide6.QtGui import QIcon
@@ -195,6 +196,11 @@ def _window(argv: list[str]) -> int:
         app.setWindowIcon(QIcon(icon))
     from .main_window import MainWindow
     w = MainWindow()
+    # one finish for the family: follow a switch made in another family app (finish.py)
+    from PySide6.QtCore import QTimer
+    _follow = QTimer(w)
+    _follow.timeout.connect(lambda: finish.follow(theme.FINISH, w.set_finish))
+    _follow.start(2000)
     listen(w)
     w.show()
     from . import update_ui
